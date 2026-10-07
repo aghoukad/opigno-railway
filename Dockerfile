@@ -29,8 +29,10 @@ RUN composer --no-plugins validate --no-check-publish --no-check-all --strict \
 
 FROM security AS dependencies
 COPY patches ./patches
-RUN --mount=type=cache,target=/tmp/composer-cache \
-    COMPOSER_CACHE_DIR=/tmp/composer-cache composer install --no-dev --prefer-dist --no-interaction --optimize-autoloader
+# Railway cache mount IDs must contain the deployment's service ID. Templates
+# create a new service ID each time, so keep this build portable without a mount.
+RUN COMPOSER_CACHE_DIR=/tmp/composer-cache composer install --no-dev --prefer-dist --no-interaction --optimize-autoloader \
+    && rm -rf /tmp/composer-cache
 
 FROM base AS runtime
 COPY --from=dependencies /var/www/opigno /var/www/opigno

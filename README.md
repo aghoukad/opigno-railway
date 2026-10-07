@@ -56,7 +56,10 @@ Open [Deploy on Railway](https://railway.com/deploy/Ys283P), supply
 `OPIGNO_ADMIN_EMAIL`, and deploy both services. The template provisions MySQL 8.4
 with `/var/lib/mysql` storage and Opigno with `/data` storage. Database passwords,
 the initial administrator password, and the Drupal hash salt are generated for
-each deployment.
+each deployment. Opigno receives a public HTTPS domain routed to container port
+8080; MySQL stays on Railway's private network. This template setting applies to
+new deployments. Earlier deployments need their own Opigno public domain targeting
+port 8080.
 
 Wait for the image build and initial installation to finish. Sign in at
 `/user/login` using `admin` and the generated `OPIGNO_ADMIN_PASSWORD` from the
@@ -118,6 +121,11 @@ docker buildx build --platform linux/amd64 --pull \
 
 Replace `YOUR_ORG` and authenticate to your registry first. Choose either the GitHub
 source build or the published image in Railway; both use this Dockerfile.
+
+The Dockerfile intentionally avoids BuildKit cache mounts. Railway requires a
+literal service ID in each [cache mount ID](https://docs.railway.com/builds/dockerfiles#cache-mounts),
+while every template deployment creates a different service ID. Composer uses a
+temporary cache that is removed in the same build layer instead.
 
 ## Operations
 
