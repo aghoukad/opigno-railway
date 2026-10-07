@@ -1,0 +1,17 @@
+--- a/src/H5PDrupal/H5PDrupal.php
++++ b/src/H5PDrupal/H5PDrupal.php
+@@ -1411,4 +1411,14 @@
+   public function setContentHubMetadataChecked($time, $lang = 'en') {
+     // TODO: Implement setContentHubMetadataChecked() method.
+   }
++  /**
++   * {@inheritdoc}
++   *
++   * Drupal does not implement the OER Content Hub account workflow. Clear any
++   * stale secret when H5P Core receives an unauthorized response from the hub.
++   */
++  public function resetHubOrganizationData() {
++    $this->setOption('hub_secret', NULL);
++  }
++
+ }

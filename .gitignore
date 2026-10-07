@@ -1,0 +1,10 @@
+.env
+.env.*
+!.env.example
+vendor/
+web/
+node_modules/
+artifacts/
+*.log
+.DS_Store
+frontend/h5p-editor/dist/

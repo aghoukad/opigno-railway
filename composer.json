@@ -1,0 +1,342 @@
+{
+    "name": "local/opigno-railway",
+    "description": "Opigno LMS Railway fork: supported PDF engines and CKEditor 5",
+    "type": "project",
+    "license": "GPL-2.0-or-later",
+    "authors": [],
+    "repositories": {
+        "h5p-editor-fork": {
+            "type": "package",
+            "package": {
+                "name": "h5p/h5p-editor",
+                "description": "H5P Editor functionality in PHP",
+                "type": "library",
+                "license": [
+                    "GPL-3.0"
+                ],
+                "autoload": {
+                    "files": [
+                        "h5peditor.class.php",
+                        "h5peditor-file.class.php",
+                        "h5peditor-ajax.class.php",
+                        "h5peditor-storage.interface.php",
+                        "h5peditor-ajax.interface.php"
+                    ]
+                },
+                "require": {
+                    "php": ">=7.0.0"
+                },
+                "version": "1.25.0-patch1",
+                "source": {
+                    "type": "git",
+                    "url": "https://github.com/h5p/h5p-editor-php-library.git",
+                    "reference": "940c33d23d9e3122c8513efc1024b23e6749d787"
+                },
+                "dist": {
+                    "type": "zip",
+                    "url": "https://api.github.com/repos/h5p/h5p-editor-php-library/zipball/940c33d23d9e3122c8513efc1024b23e6749d787",
+                    "reference": "940c33d23d9e3122c8513efc1024b23e6749d787"
+                }
+            }
+        },
+        "opigno-fork": {
+            "type": "package",
+            "package": {
+                "name": "opigno/opigno_lms",
+                "description": "Opigno LMS profile",
+                "type": "drupal-profile",
+                "license": [
+                    "GPL-2.0-or-later"
+                ],
+                "source": {
+                    "url": "https://bitbucket.org/opigno/opigno_lms.git",
+                    "type": "git",
+                    "reference": "d60e7e3b7935dbcf037536dd1b775bc603192660"
+                },
+                "dist": {
+                    "url": "https://bitbucket.org/opigno/opigno_lms/get/d60e7e3b7935dbcf037536dd1b775bc603192660.zip",
+                    "type": "zip",
+                    "shasum": "",
+                    "reference": "d60e7e3b7935dbcf037536dd1b775bc603192660"
+                },
+                "require": {
+                    "drupal/core-recommended": "^10.2",
+                    "dompdf/dompdf": "^3.1.6",
+                    "opigno/tincan": "^1.1",
+                    "drupal/calendar": "^1.0@alpha",
+                    "drupal/media_entity_browser": "^2.0@alpha",
+                    "drupal/pdf": "^1.2",
+                    "drupal/commerce": "^2.27.0",
+                    "drupal/better_exposed_filters": "^6.0",
+                    "drupal/colorbox": "^2.0",
+                    "drupal/config_rewrite": "^1.4.0",
+                    "drupal/entity": "^1.3",
+                    "drupal/extra_field": "^2.3",
+                    "drupal/field_group": "^3.2.0",
+                    "drupal/h5p": "^2.0@alpha",
+                    "drupal/token": "^1.10",
+                    "drupal/token_filter": "^2.1",
+                    "drupal/views_templates": "^1.3",
+                    "drupal/entity_print": "^2.13",
+                    "drupal/group": "^1.6",
+                    "drupal/popup_field_group": "^1.8",
+                    "drupal/video": "^3.0",
+                    "drupal/embed": "^1.5",
+                    "drupal/entity_embed": "^1.4",
+                    "drupal/entity_browser": "^2.8",
+                    "drupal/ctools": "^4.0",
+                    "drupal/entity_reference_revisions": "^1.9.0",
+                    "drupal/inline_entity_form": "^1.0@rc",
+                    "drupal/mailsystem": "^4.4",
+                    "drupal/mimemail": "^1.0.0@alpha",
+                    "drupal/address": "^1.9.0",
+                    "commerceguys/addressing": "^1.0.7",
+                    "drupal/key": "^1.14.0",
+                    "drupal/state_machine": "^1.5.0",
+                    "kenwheeler/slick": "~1.8.1",
+                    "drupal/search_api": "^1.25",
+                    "drupal/dropzonejs": "^2.6",
+                    "enyo/dropzone": "v5.5.0",
+                    "drupal/message": "^1.2.0",
+                    "drupal/message_notify": "^1.2.0",
+                    "mglaman/composer-drupal-lenient": "^1.0",
+                    "mozilla/pdf.js": "6.2.108",
+                    "furf/jquery-ui-touch-punch": "master",
+                    "drupal/jwt": "^2.0",
+                    "drupal/restui": "^1.20.0",
+                    "drupal/userprotect": "^1.1.0",
+                    "drupal/role_delegation": "^1.2",
+                    "drupal/profile": "^1.3.0",
+                    "drupal/ultimate_cron": "^2.0@alpha",
+                    "drupal/queue_ui": "~3.1",
+                    "drupal/views_infinite_scroll": "^2.0",
+                    "drupal/private_message": "^3.0",
+                    "drupal/twig_field_value": "~2.0.0",
+                    "drupal/simple_gmap": "^3.1",
+                    "drupal/honeypot": "^2.0",
+                    "drupal/css_editor": "^2.0",
+                    "drupal/color": "^1.0",
+                    "drupal/queue_mail": "^1.4",
+                    "opis/json-schema": "^2.2",
+                    "drupal/rdf": "^2.0",
+                    "drupal/exif_orientation": "^1.4",
+                    "drupal/quickedit": "^1.0",
+                    "drupal/opigno_calendar": "~3.2.0",
+                    "drupal/opigno_calendar_event": "~3.2.0",
+                    "drupal/opigno_catalog": "~3.2.0",
+                    "drupal/opigno_certificate": "~3.2.0",
+                    "drupal/opigno_class": "~3.2.0",
+                    "drupal/opigno_commerce": "~3.2.0",
+                    "drupal/opigno_course": "~3.2.0",
+                    "drupal/opigno_cron": "~3.2.0",
+                    "drupal/opigno_dashboard": "~3.2.0",
+                    "drupal/opigno_forum": "~3.2.0",
+                    "drupal/opigno_group_manager": "~3.2.0",
+                    "drupal/opigno_ilt": "~3.2.0",
+                    "drupal/opigno_learning_path": "~3.2.0",
+                    "drupal/opigno_like": "~3.2.0",
+                    "drupal/opigno_messaging": "~3.2.0",
+                    "drupal/opigno_mobile_app": "~3.2.0",
+                    "drupal/opigno_module": "~3.2.0",
+                    "drupal/opigno_moxtra": "~3.2.0",
+                    "drupal/opigno_notification": "~3.2.0",
+                    "drupal/opigno_scorm": "~3.2.0",
+                    "drupal/opigno_search": "~3.2.0",
+                    "drupal/opigno_social": "~3.2.0",
+                    "drupal/opigno_statistics": "~3.2.0",
+                    "drupal/opigno_tincan_api": "~3.2.0",
+                    "drupal/opigno_tour": "~3.2.0",
+                    "drupal/tft": "~3.2.0",
+                    "drupal/aristotle": "~3.2.0"
+                },
+                "extra": {
+                    "patches": {
+                        "drupal/h5p": {
+                            "#3295255: H5P widget settings unclickable checkboxes": "https://www.drupal.org/files/issues/2022-07-11/3295255_2.patch"
+                        },
+                        "drupal/core": {
+                            "#2924061: Make AJAX errors configurable": "https://www.drupal.org/files/issues/2024-02-05/2987444-53.patch",
+                            "#3218230: Decorate config entity storage errors": "https://www.drupal.org/files/issues/2022-01-10/3218230-decorate-config-entity-storage-errors-7.patch",
+                            "#3396299: active-link.js should use CSS.escape.": "https://www.drupal.org/files/issues/2023-10-24/active-link-css-escape.patch",
+                            "#2924061: Create views plugins for date range fields": "https://www.drupal.org/files/issues/2019-04-15/2924061-14.patch",
+                            "#2898635: [PP-1] bundleFieldDefinitions() are not added in EntityViewsData": "https://www.drupal.org/files/issues/2020-01-16/2898635-28.patch",
+                            "#3302838: Querying with NULL values results in warning mb_strtolower(): Passing null to parameter is deprecated": "https://www.drupal.org/files/issues/2022-08-23/3302838-13.patch"
+                        },
+                        "drupal/group": {
+                            "Fix access to the courses group": "https://www.drupal.org/files/issues/2020-08-14/group-course-3165140-4.patch",
+                            "2942657 - 403 error for views.ajax route on Group related views (with AJAX enabled)": "https://www.drupal.org/files/issues/2023-10-23/2942657-31.patch"
+                        },
+                        "drupal/config_rewrite": {
+                            "#3143747: Avoid error on installation": "https://www.drupal.org/files/issues/2020-05-29/config_rewrite-avoid-error-on-installation-3143747.patch"
+                        },
+                        "drupal/entity_browser": {
+                            "Notice: Undefined index: entity_browser_select": "https://www.drupal.org/files/issues/2021-01-15/undefined_index__entity_browser_select-3086783-008.patch"
+                        },
+                        "drupal/views_infinite_scroll": {
+                            "Headers in table format repeat on load more instead of adding rows": "https://www.drupal.org/files/issues/2021-02-11/2899705-35.patch"
+                        },
+                        "drupal/better_exposed_filters": {
+                            "Textfield in auto-submit filter with Ajax should retain focus submitted": "https://www.drupal.org/files/issues/2020-09-16/3103626-12.patch"
+                        }
+                    }
+                },
+                "version": "3.2.7-patch1"
+            }
+        },
+        "drupal": {
+            "type": "composer",
+            "url": "https://packages.drupal.org/8"
+        },
+        "enyo/dropzone": {
+            "type": "package",
+            "package": {
+                "name": "enyo/dropzone",
+                "version": "v5.5.0",
+                "type": "drupal-library",
+                "dist": {
+                    "url": "https://github.com/dropzone/dropzone/archive/refs/tags/v5.5.0.zip",
+                    "type": "zip"
+                }
+            }
+        },
+        "mozilla/pdf.js": {
+            "type": "package",
+            "package": {
+                "name": "mozilla/pdf.js",
+                "version": "6.2.108",
+                "type": "drupal-library",
+                "dist": {
+                    "url": "https://github.com/mozilla/pdf.js/releases/download/v6.2.108/pdfjs-6.2.108-dist.zip",
+                    "type": "zip"
+                }
+            }
+        },
+        "kenwheeler/slick": {
+            "type": "package",
+            "package": {
+                "name": "kenwheeler/slick",
+                "version": "1.8.1",
+                "type": "drupal-library",
+                "dist": {
+                    "url": "https://github.com/kenwheeler/slick/archive/v1.8.1.zip",
+                    "type": "zip"
+                }
+            }
+        },
+        "furf/jquery-ui-touch-punch": {
+            "type": "package",
+            "package": {
+                "name": "furf/jquery-ui-touch-punch",
+                "version": "master",
+                "type": "drupal-library",
+                "dist": {
+                    "url": "https://github.com/furf/jquery-ui-touch-punch/archive/4bc009145202d9c7483ba85f3a236a8f3470354d.zip",
+                    "type": "zip",
+                    "reference": "4bc009145202d9c7483ba85f3a236a8f3470354d"
+                }
+            }
+        },
+        "almende/vis": {
+            "type": "package",
+            "package": {
+                "name": "almende/vis",
+                "version": "v4.21.0",
+                "type": "drupal-library",
+                "dist": {
+                    "url": "https://github.com/almende/vis/archive/refs/tags/v4.21.0.zip",
+                    "type": "zip"
+                }
+            }
+        }
+    },
+    "require": {
+        "wikimedia/composer-merge-plugin": "2.0",
+        "composer/installers": "*",
+        "cweagans/composer-patches": "^1.7",
+        "drupal/core-composer-scaffold": "^10.0",
+        "opigno/opigno_lms": "3.2.7-patch1",
+        "drush/drush": "^12.5",
+        "h5p/h5p-editor": "1.25.0-patch1"
+    },
+    "config": {
+        "sort-packages": false,
+        "preferred-install": {
+            "*": "dist"
+        },
+        "allow-plugins": {
+            "composer/installers": true,
+            "cweagans/composer-patches": true,
+            "drupal/core-composer-scaffold": true,
+            "wikimedia/composer-merge-plugin": true,
+            "drupal/console-extend-plugin": true,
+            "topfloor/composer-cleanup-vcs-dirs": true,
+            "mglaman/composer-drupal-lenient": true
+        }
+    },
+    "conflict": {
+        "drupal/drupal": "*"
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true,
+    "extra": {
+        "installer-paths": {
+            "web/core": [
+                "type:drupal-core"
+            ],
+            "web/libraries/{$name}": [
+                "type:drupal-library"
+            ],
+            "web/modules/contrib/{$name}": [
+                "type:drupal-module"
+            ],
+            "web/profiles/contrib/{$name}": [
+                "type:drupal-profile"
+            ],
+            "web/themes/contrib/{$name}": [
+                "type:drupal-theme"
+            ],
+            "web/libraries/ckeditor": [
+                "type:drupal-library-ckeditor"
+            ],
+            "drush/Commands/{$name}": [
+                "type:drupal-drush"
+            ]
+        },
+        "drupal-scaffold": {
+            "locations": {
+                "web-root": "web/"
+            }
+        },
+        "enable-patching": true,
+        "composer-exit-on-patch-failure": true,
+        "patchLevel": {
+            "drupal/core": "-p2"
+        },
+        "patches": {
+            "opigno/opigno_lms": {
+                "Use Drupal core CKEditor 5": "patches/profile-ckeditor5.patch"
+            },
+            "drupal/opigno_certificate": {
+                "Migrate certificate configuration to CKEditor 5": "patches/certificate-ckeditor5.patch"
+            },
+            "drupal/opigno_module": {
+                "Support PDF.js ES modules and current Twig": "patches/module-pdfjs-twig.patch"
+            },
+            "drupal/opigno_learning_path": {
+                "Remove obsolete Twig spaceless filter": "patches/learning-path-twig.patch"
+            },
+            "drupal/pdf": {
+                "Load PDF.js ES modules with Drupal behaviors": "patches/pdf-es-modules.patch"
+            },
+            "drupal/entity_print": {
+                "Constrain Dompdf to local public assets": "patches/entity-print-local-assets.patch"
+            },
+            "drupal/h5p": {
+                "Implement H5P Core 1.28 hub reset callback": "patches/h5p-core-128.patch"
+            },
+            "h5p/h5p-editor": {
+                "Use the pinned H5P core 1.28 storage API": "patches/h5p-editor-core128.patch"
+            }
+        }
+    }
+}

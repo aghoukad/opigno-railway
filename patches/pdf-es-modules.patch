@@ -1,0 +1,145 @@
+--- a/pdf.libraries.yml
++++ b/pdf.libraries.yml
+@@ -5,11 +5,13 @@
+     url: https://raw.githubusercontent.com/mozilla/pdf.js/master/LICENSE
+     gpl-compatible: true
+   js:
+-    /libraries/pdf.js/build/pdf.js: { attributes: { type: module } }
+-    #//mozilla.github.io/pdf.js/build/pdf.js: { type: external, minified: false }
++    /libraries/pdf.js/build/pdf.mjs: { attributes: { type: module } }
++    #//mozilla.github.io/pdf.js/build/pdf.mjs: { type: external, minified: false }
+ drupal.pdf:
+   dependencies:
+-    - pdf/mozilla.pdf.js
++    - core/drupal
++    - core/drupalSettings
++    - core/once
+   js:
+     js/pdf.js: {}
+   css:
+--- a/src/Plugin/Field/FieldFormatter/PdfPages.php
++++ b/src/Plugin/Field/FieldFormatter/PdfPages.php
+@@ -187,7 +187,7 @@
+       }
+     }
+     $elements['#attached']['library'][] = 'pdf/drupal.pdf';
+-    $worker = $this->fileUrlGenerator->generateAbsoluteString(base_path() . 'libraries/pdf.js/build/pdf.worker.js');
++    $worker = $this->fileUrlGenerator->generateAbsoluteString(base_path() . 'libraries/pdf.js/build/pdf.worker.mjs');
+     $elements['#attached']['drupalSettings'] = [
+       'pdf' => [
+         'workerSrc' => $worker,
+--- a/src/Plugin/Field/FieldFormatter/PdfThumbnail.php
++++ b/src/Plugin/Field/FieldFormatter/PdfThumbnail.php
+@@ -204,7 +204,7 @@
+       }
+     }
+     $elements['#attached']['library'][] = 'pdf/drupal.pdf';
+-    $worker = $this->fileUrlGenerator->generateAbsoluteString(base_path() . 'libraries/pdf.js/build/pdf.worker.js');
++    $worker = $this->fileUrlGenerator->generateAbsoluteString(base_path() . 'libraries/pdf.js/build/pdf.worker.mjs');
+     $elements['#attached']['drupalSettings'] = [
+       'pdf' => [
+         'workerSrc' => $worker,
+--- a/js/pdf.js
++++ b/js/pdf.js
+@@ -1,52 +1,55 @@
+-(function ($, Drupal, drupalSettings) {
++(function (Drupal, drupalSettings, once) {
++  // Opigno's legacy Angular Zone.js replaces the global Promise on some pages.
++  // Restore the modern static APIs required by PDF.js without replacing Promise.
++  const methods = {
++    withResolvers() {
++      let resolve, reject;
++      const promise = new this((res, rej) => { resolve = res; reject = rej; });
++      return {promise, resolve, reject};
++    },
++    try(callback, ...args) {
++      return new this(resolve => resolve(callback(...args)));
++    },
++    allSettled(values) {
++      return this.all(Array.from(values, value => this.resolve(value).then(
++        value => ({status: 'fulfilled', value}),
++        reason => ({status: 'rejected', reason}),
++      )));
++    },
++  };
++  for (const [name, method] of Object.entries(methods)) {
++    if (typeof Promise[name] !== 'function') {
++      Object.defineProperty(Promise, name, {value: method, configurable: true, writable: true});
++    }
++  }
++  let library;
+   Drupal.behaviors.pdf = {
+-    attach: function(context, settings) {
+-      pdfjsLib.GlobalWorkerOptions.workerSrc = settings.pdf.workerSrc;
+-
+-      const canvases = context.getElementsByClassName("pdf-thumbnail");
+-      Array.prototype.forEach.call(canvases, function(canvas) {
+-        const file = canvas.attributes.file.value;
+-        let loadingTask = pdfjsLib.getDocument({url: file});
+-        loadingTask.promise.then(function(pdf) {
+-          pdf.getPage(1).then(function(page) {
+-            const scale = (canvas.attributes.scale) ? canvas.attributes.scale.value : 1;
+-            let viewport = page.getViewport({ scale: scale });
+-            let context = canvas.getContext('2d');
+-            canvas.height = viewport.height;
+-            canvas.width = viewport.width;
+-            var renderContext = {
+-              canvasContext: context,
+-              viewport
+-            };
+-            const renderTask = page.render(renderContext);
+-          });
+-        });
+-      });
+-
+-      const fields = context.getElementsByClassName("pdf-pages");
+-      Array.prototype.forEach.call(fields, function(container) {
+-        const file = container.attributes.file.value;
+-        let loadingTask = pdfjsLib.getDocument({url: file});
+-        loadingTask.promise.then(function(pdf) {
+-          for (var i = 1; i <= pdf.numPages; i++) {
+-            pdf.getPage(i).then(function(page) {
+-              var canvas = document.createElement("canvas");
+-              canvas.setAttribute("class", "pdf-canvas");
+-              container.appendChild(canvas);
+-              const scale = (container.attributes.scale) ? container.attributes.scale.value : 1;
+-              var viewport = page.getViewport({scale: scale});
+-              var context = canvas.getContext('2d');
++    attach(context, settings) {
++      const elements = once('opigno-pdf', '.pdf-thumbnail, .pdf-pages', context);
++      if (!elements.length) return;
++      // Import explicitly: module scripts and Drupal behaviors have different timing.
++      library ||= import(`${drupalSettings.path.baseUrl}libraries/pdf.js/build/pdf.mjs`);
++      library.then(async (pdfjs) => {
++        pdfjs.GlobalWorkerOptions.workerSrc = settings.pdf.workerSrc;
++        for (const element of elements) {
++          try {
++            const pdf = await pdfjs.getDocument({url: element.getAttribute('file'), isEvalSupported: false}).promise;
++            const thumbnail = element.classList.contains('pdf-thumbnail');
++            for (let i = 1; i <= (thumbnail ? 1 : pdf.numPages); i++) {
++              const page = await pdf.getPage(i);
++              const canvas = thumbnail ? element : document.createElement('canvas');
++              const viewport = page.getViewport({scale: Number(element.getAttribute('scale')) || 1});
++              canvas.width = viewport.width;
+               canvas.height = viewport.height;
+-              canvas.width = viewport.width;
+-              var renderContext = {
+-                canvasContext: context,
+-                viewport
+-              };
+-              const renderTask = page.render(renderContext);
+-            });
++              if (!thumbnail) element.appendChild(canvas);
++              await page.render({canvasContext: canvas.getContext('2d'), viewport}).promise;
++            }
++          } catch (error) {
++            element.setAttribute('aria-label', Drupal.t('The PDF could not be loaded.'));
++            console.error('PDF rendering failed', error);
+           }
+-        });
++        }
+       });
+     }
+   };
+-})(jQuery, Drupal, drupalSettings);
++})(Drupal, drupalSettings, once);

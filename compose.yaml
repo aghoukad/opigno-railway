@@ -1,0 +1,47 @@
+name: opigno-railway
+services:
+  mysql:
+    image: mysql:8.4
+    environment:
+      MYSQL_DATABASE: opigno
+      MYSQL_USER: opigno
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:?Set MYSQL_PASSWORD in .env}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?Set MYSQL_ROOT_PASSWORD in .env}
+    command: ["--max-allowed-packet=64M"]
+    volumes:
+      - mysql-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "--silent"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+    restart: unless-stopped
+
+  opigno:
+    build: .
+    image: opigno-railway:3.2.7-patch1
+    ports:
+      - "127.0.0.1:${LOCAL_PORT:-8080}:8080"
+    environment:
+      PORT: "8080"
+      MYSQLHOST: mysql
+      MYSQLPORT: "3306"
+      MYSQLDATABASE: opigno
+      MYSQLUSER: opigno
+      MYSQLPASSWORD: ${MYSQL_PASSWORD:?Set MYSQL_PASSWORD in .env}
+      OPIGNO_ADMIN_USERNAME: ${OPIGNO_ADMIN_USERNAME:-admin}
+      OPIGNO_ADMIN_PASSWORD: ${OPIGNO_ADMIN_PASSWORD:?Set OPIGNO_ADMIN_PASSWORD in .env}
+      OPIGNO_ADMIN_EMAIL: ${OPIGNO_ADMIN_EMAIL:?Set OPIGNO_ADMIN_EMAIL in .env}
+      OPIGNO_SITE_NAME: ${OPIGNO_SITE_NAME:-Opigno LMS}
+      SITE_URL: http://localhost:${LOCAL_PORT:-8080}
+      CRON_ENABLED: "1"
+    volumes:
+      - opigno-data:/data
+    depends_on:
+      mysql:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  mysql-data:
+  opigno-data:

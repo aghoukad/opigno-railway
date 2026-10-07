@@ -1,0 +1,28 @@
+--- a/modules/opigno_user_selection/templates/entity-selector.html.twig
++++ b/modules/opigno_user_selection/templates/entity-selector.html.twig
+@@ -4,7 +4,7 @@
+  * @see template_preprocess_entity_selector()
+  */
+ #}
+-{% apply spaceless %}
++
+   <select{{ attributes }}>
+     {% for option in options %}
+       {% if option.type == 'optgroup' %}
+@@ -19,4 +19,4 @@
+       {% endif %}
+     {% endfor %}
+   </select>
+-{% endapply %}
++
+--- a/src/TwigExtension/DefaultTwigExtension.php
++++ b/src/TwigExtension/DefaultTwigExtension.php
+@@ -167,7 +167,7 @@
+    * {@inheritdoc}
+    */
+   public function getOperators() {
+-    return [];
++    return [[], []];
+   }
+ 
+   /**

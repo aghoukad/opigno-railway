@@ -1,0 +1,41 @@
+--- a/opigno_module.install
++++ b/opigno_module.install
+@@ -314,7 +314,7 @@
+ function opigno_module_requirements($phase) {
+   $requirements = [];
+   $message = t('pdf.js library is not installed. Please install it from <a href="@library">here</a> and place in <em>libraries/</em> folder', ['@library' => 'http://mozilla.github.io/pdf.js/getting_started/']);
+-  $pdf_js_library = file_exists('libraries/pdf.js/build/pdf.js') && file_exists('libraries/pdf.js/build/pdf.worker.js');
++  $pdf_js_library = file_exists('libraries/pdf.js/build/pdf.mjs') && file_exists('libraries/pdf.js/build/pdf.worker.mjs');
+ 
+   if ($phase == 'runtime') {
+     return [];
+--- a/templates/opigno-activity-content-add-list.html.twig
++++ b/templates/opigno-activity-content-add-list.html.twig
+@@ -14,10 +14,10 @@
+  * @ingroup themeable
+  */
+ #}
+-{% apply spaceless %}
++
+   <dl>
+     {% for type in types %}
+       <dt>{{ type.link }}</dt>
+     {% endfor %}
+   </dl>
+-{% endapply %}
++
+--- a/templates/opigno-answer-content-add-list.html.twig
++++ b/templates/opigno-answer-content-add-list.html.twig
+@@ -14,10 +14,10 @@
+  * @ingroup themeable
+  */
+ #}
+-{% apply spaceless %}
++
+   <dl>
+     {% for type in types %}
+       <dt>{{ type.link }}</dt>
+     {% endfor %}
+   </dl>
+-{% endapply %}
++

@@ -1,0 +1,44 @@
+name: Validate Opigno image
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+  schedule:
+    - cron: '23 7 * * 1'
+permissions:
+  contents: read
+jobs:
+  build-and-install:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - name: Build and audit locked dependencies
+        run: docker build --pull --no-cache -t opigno-railway:3.2.7-patch1 .
+      - name: Generate disposable installation credentials
+        shell: bash
+        run: |
+          umask 077
+          {
+            echo "MYSQL_PASSWORD=$(openssl rand -hex 32)"
+            echo "MYSQL_ROOT_PASSWORD=$(openssl rand -hex 32)"
+            echo "OPIGNO_ADMIN_PASSWORD=$(openssl rand -hex 32)"
+            echo 'OPIGNO_ADMIN_EMAIL=ci@example.test'
+          } > .env
+      - name: Install into an empty database
+        run: docker compose up -d --no-build --wait --wait-timeout 900
+      - name: Check installation and browser-library guards
+        run: |
+          docker compose cp tests opigno:/tmp/opigno-tests
+          docker compose exec -T opigno mkdir -p /tmp/scripts
+          docker compose cp scripts/check-assets.php opigno:/tmp/scripts/check-assets.php
+          docker compose exec -T --user www-data opigno drush php:script /tmp/opigno-tests/installation.php
+          docker compose exec -T opigno php /tmp/opigno-tests/check-assets.php
+          curl --fail http://localhost:8080/healthz.php
+          curl --fail http://localhost:8080/user/login > /dev/null
+      - name: Show diagnostic logs on failure
+        if: failure()
+        run: docker compose logs --tail=120
+      - name: Remove disposable test resources
+        if: always()
+        run: docker compose down --volumes

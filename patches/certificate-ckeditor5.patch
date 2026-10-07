@@ -1,0 +1,174 @@
+--- a/opigno_certificate.install
++++ b/opigno_certificate.install
+@@ -44,6 +44,6 @@
+     watchdog_exception('opigno_certificate_exception', $e);
+   }
+ 
+-  // Enable CKEditor Background module.
+-  \Drupal::service('module_installer')->install(['ckeditor_bgimage', 'ckeditor_font']);
++  // Use the supported editor included in Drupal core.
++  \Drupal::service('module_installer')->install(['ckeditor5']);
+ }
+--- a/opigno_certificate.info.yml
++++ b/opigno_certificate.info.yml
+@@ -5,6 +5,7 @@
+ core_version_requirement: ^9 || ^10
+ dependencies:
+   - opigno_class:opigno_class
++  - drupal:ckeditor5
+   - token_filter:token_filter
+   - drupal:views
+   - entity_print:entity_print
+--- a/config/install/editor.editor.opigno_certificate_wysiwyg.yml
++++ b/config/install/editor.editor.opigno_certificate_wysiwyg.yml
+@@ -1,65 +1,106 @@
+-uuid: null
+ langcode: en
+ status: true
+ dependencies:
+   config:
+     - filter.format.opigno_certificate_wysiwyg
+   module:
+-    - ckeditor
+-    - ckeditor_bgimage
+-third_party_settings:
+-  ckeditor_bgimage:
+-    status: true
+-    scheme: public
+-    directory: inline-files
+-    extensions: 'png jpeg jpg'
++    - ckeditor5
+ format: opigno_certificate_wysiwyg
+-editor: ckeditor
++editor: ckeditor5
+ settings:
+   toolbar:
+-    rows:
+-      -
++    items:
++      - bold
++      - italic
++      - strikethrough
++      - superscript
++      - subscript
++      - removeFormat
++      - '|'
++      - link
++      - '|'
++      - bulletedList
++      - numberedList
++      - '|'
++      - blockQuote
++      - drupalInsertImage
++      - insertTable
++      - horizontalLine
++      - '|'
++      - heading
++      - codeBlock
++      - '|'
++      - sourceEditing
++  plugins:
++    ckeditor5_codeBlock:
++      languages:
+         -
+-          name: Formatting
+-          items:
+-            - Format
+-            - Bold
+-            - Italic
+-            - Font
+-            - FontSize
+-            - JustifyLeft
+-            - JustifyCenter
+-            - JustifyRight
++          label: 'Plain text'
++          language: plaintext
+         -
+-          name: Links
+-          items:
+-            - DrupalLink
+-            - DrupalUnlink
++          label: C
++          language: c
+         -
+-          name: Lists
+-          items:
+-            - BulletedList
+-            - NumberedList
++          label: 'C#'
++          language: cs
+         -
+-          name: Media
+-          items:
+-            - Blockquote
+-            - DrupalImage
+-            - bgimage
++          label: C++
++          language: cpp
+         -
+-          name: Tools
+-          items:
+-            - Source
+-  plugins:
+-    language:
+-      language_list: un
+-    stylescombo:
+-      styles: ''
++          label: CSS
++          language: css
++        -
++          label: Diff
++          language: diff
++        -
++          label: HTML
++          language: html
++        -
++          label: Java
++          language: java
++        -
++          label: JavaScript
++          language: javascript
++        -
++          label: PHP
++          language: php
++        -
++          label: Python
++          language: python
++        -
++          label: Ruby
++          language: ruby
++        -
++          label: TypeScript
++          language: typescript
++        -
++          label: XML
++          language: xml
++    ckeditor5_heading:
++      enabled_headings:
++        - heading2
++        - heading3
++        - heading4
++        - heading5
++        - heading6
++    ckeditor5_imageResize:
++      allow_resize: true
++    ckeditor5_list:
++      properties:
++        reversed: true
++        startIndex: true
++      multiBlock: true
++    ckeditor5_sourceEditing:
++      allowed_tags:
++        - '<div style class>'
++        - '<span style class>'
++        - '<p style class>'
++        - '<img style class>'
+ image_upload:
+   status: true
+   scheme: public
+   directory: inline-images
+-  max_size: ''
++  max_size: null
+   max_dimensions:
+     width: null
+     height: null

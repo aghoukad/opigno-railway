@@ -1,0 +1,78 @@
+--- a/src/Plugin/EntityPrint/PrintEngine/DomPdf.php
++++ b/src/Plugin/EntityPrint/PrintEngine/DomPdf.php
+@@ -87,9 +87,11 @@
+     $this->dompdfOptions->setFontCache($temp_dir);
+     $this->dompdfOptions->setFontDir($temp_dir);
+     $this->dompdfOptions->setLogOutputFile($temp_dir . DIRECTORY_SEPARATOR . self::LOG_FILE_NAME);
+-    $this->dompdfOptions->setIsRemoteEnabled($this->configuration['enable_remote']);
++    $this->dompdfOptions->setIsRemoteEnabled(FALSE);
++    $this->dompdfOptions->setIsJavascriptEnabled(FALSE);
++    $this->dompdfOptions->setChroot([DRUPAL_ROOT, '/data/public']);
+     $this->dompdfOptions->setIsFontSubsettingEnabled($this->configuration['font_subsetting']);
+-    $this->dompdfOptions->setIsPhpEnabled($this->configuration['embedded_php']);
++    $this->dompdfOptions->setIsPhpEnabled(FALSE);
+     $this->dompdfOptions->setDpi($this->configuration['dpi']);
+ 
+     $this->dompdf = new DompdfLib($this->dompdfOptions);
+@@ -98,8 +100,8 @@
+     }
+ 
+     $this->dompdf
+-      ->setBaseHost($request->getHttpHost())
+-      ->setProtocol($request->getScheme() . '://');
++      ->setBasePath(DRUPAL_ROOT . '/')
++      ->setProtocol('file://');
+   }
+ 
+   /**
+--- a/src/Plugin/EntityPrint/PrintEngine/DomPdf.php
++++ b/src/Plugin/EntityPrint/PrintEngine/DomPdf.php
+@@ -209,13 +209,47 @@
+   }
+ 
+   /**
++   * Resolve same-origin images and stylesheets locally without HTTP requests.
++   */
++  private function localizeAssets(string $html): string {
++    $document = new \DOMDocument();
++    $previous = libxml_use_internal_errors(TRUE);
++    try {
++      if (!$document->loadHTML('<?xml encoding="UTF-8">' . $html, LIBXML_NONET)) {
++        throw new PrintEngineException('Unable to parse certificate HTML.');
++      }
++      // Remove the encoding hint before Dompdf's HTML5 parser reads the HTML.
++      foreach (iterator_to_array($document->childNodes) as $node) {
++        if ($node->nodeType === XML_PI_NODE) {
++          $document->removeChild($node);
++        }
++      }
++      $xpath = new \DOMXPath($document);
++      foreach ($xpath->query('//base') as $base) {
++        $base->parentNode->removeChild($base);
++      }
++      $origin = $this->request->getSchemeAndHttpHost();
++      foreach ($xpath->query('//img/@src | //link[@rel="stylesheet"]/@href') as $attribute) {
++        if (str_starts_with($attribute->value, $origin . '/')) {
++          $attribute->value = substr($attribute->value, strlen($origin));
++        }
++      }
++      return $document->saveHTML();
++    }
++    finally {
++      libxml_clear_errors();
++      libxml_use_internal_errors($previous);
++    }
++  }
++
++  /**
+    * {@inheritdoc}
+    */
+   public function addPage($content) {
+     // We must keep adding to previously added HTML as loadHtml() replaces the
+     // entire document.
+     $this->html .= (string) $content;
+-    $this->dompdf->loadHtml($this->html);
++    $this->dompdf->loadHtml($this->localizeAssets($this->html));
+ 
+     return $this;
+   }

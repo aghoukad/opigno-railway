@@ -1,0 +1,11 @@
+--- a/h5peditor.class.php
++++ b/h5peditor.class.php
+@@ -383,7 +383,7 @@
+     $libraryData->version = (object) array('major' => $library['majorVersion'], 'minor' => $library['minorVersion']);
+     $libraryData->title = $library['title'];
+ 
+-    $libraryData->upgradesScript = $this->h5p->fs->getUpgradeScript($library);
++    $libraryData->upgradesScript = $this->h5p->fs->getUpgradeScript($library['machineName'], $library['majorVersion'], $library['minorVersion']);
+     if ($libraryData->upgradesScript !== NULL) {
+       // If valid add URL prefix
+       $libraryData->upgradesScript = $this->h5p->url . $prefix . $libraryData->upgradesScript;
