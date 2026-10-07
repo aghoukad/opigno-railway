@@ -1,10 +1,18 @@
 # Opigno LMS on Railway
 
+[![Deploy on Railway](https://railway.com/button.svg)](https://railway.com/deploy/Ys283P)
+
+[Source repository](https://github.com/aghoukad/opigno-railway) ·
+[Build validation](https://github.com/aghoukad/opigno-railway/actions/workflows/validate.yml)
+
 Custom fork **3.2.7-patch1**, built from public Opigno 3.2.7. It upgrades Drupal
 to 10.6.18, Dompdf to 3.1.6, PDF.js to 6.2.108, and the Drupal and H5P editors to
 CKEditor 5. The Docker build enforces Composer and npm audits and fails if a patch
 cannot be applied. The image has passed local installation and functional smoke
-tests; it has not been published to a registry or deployed on Railway.
+tests. GitHub Actions has also passed an AMD64 build, dependency audits, and a
+fresh installation. Railway builds directly from this repository; no container
+registry is required. The template has been created, but a live Railway deployment
+has not yet been tested.
 
 This fork records upstream source commits, dependency locks, and integration patches.
 Read [MAINTENANCE.md](MAINTENANCE.md) for ownership,
@@ -42,9 +50,25 @@ can take several minutes. Username defaults to `admin`; the password comes from
 `OPIGNO_ADMIN_PASSWORD`. Changing that variable later does not reset an existing
 account. Recreated containers reuse the database and `/data` volume.
 
-## Create the Railway template
+## Deploy the Railway template
 
-The following is a template recipe, not an automatically provisioned project.
+Open [Deploy on Railway](https://railway.com/deploy/Ys283P), supply
+`OPIGNO_ADMIN_EMAIL`, and deploy both services. The template provisions MySQL 8.4
+with `/var/lib/mysql` storage and Opigno with `/data` storage. Database passwords,
+the initial administrator password, and the Drupal hash salt are generated for
+each deployment.
+
+Wait for the image build and initial installation to finish. Sign in at
+`/user/login` using `admin` and the generated `OPIGNO_ADMIN_PASSWORD` from the
+Opigno service's Variables tab. Changing that variable later does not reset the
+existing administrator password. Configure email delivery, backups, and a custom
+domain as appropriate before inviting users.
+
+The template is shareable by URL and is not listed in the Railway marketplace.
+
+## Recreate or customize the Railway template
+
+The following recipe documents the template configuration for maintainers.
 
 1. Push this project to a GitHub repository that Railway can access. Alternatively,
    publish a tested `linux/amd64` image to your container registry and use that image

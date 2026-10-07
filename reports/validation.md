@@ -80,8 +80,18 @@ docker compose exec --user www-data opigno drush --uri=http://localhost:8080 \
 Use your configured local port in `--uri`. Confirm the public-file fixture survives
 `docker compose up -d --no-build --force-recreate opigno`. Remove the disposable
 fixtures when finished. The GitHub workflow automates the image build, fresh
-installation and installation/asset guards after the repository is pushed; that
-hosted workflow has not been run in this session.
+installation and installation/asset guards after the repository is pushed.
+
+The [first hosted GitHub Actions run](https://github.com/aghoukad/opigno-railway/actions/runs/37703705686)
+passed on 2026-10-07 for commit `59845d7`. It built the image on an AMD64 Ubuntu
+runner, passed the Composer and npm audit gates, installed into a fresh MySQL
+database, passed the installation and asset guards, and returned successful HTTP
+responses for `/healthz.php` and `/user/login`.
+
+The [Railway template](https://railway.com/deploy/Ys283P) was created and its
+deployment page was checked in Chrome. Both services, their persistent volume
+paths, and the required administrator email input were verified. No live Railway
+project was deployed during template creation.
 
 ## Remaining deployment acceptance work
 
