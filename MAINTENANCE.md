@@ -68,6 +68,13 @@ content libraries live in the volume and are not fully covered by Composer/npm a
 
 ## Release procedure
 
+The Resend transport in `docker/resend-mail.py` replaces PHP's sendmail command.
+It uses Debian's Python standard-library MIME parser and HTTPS client; it adds no
+pip or Composer packages. Keep the runtime's Debian/Python security updates current.
+Its tests cover MIME conversion, API retries, safe failure diagnostics, and actual
+Opigno Mime Mail output captured locally. They never send external email. Existing
+mail queues and formatter configuration must remain compatible when updating Drupal.
+
 1. Work on a branch and back up a representative test database and `/data`.
 2. Review Drupal, Opigno, Dompdf, PDF.js, H5P and CKEditor advisories. Update the fork
    constraints and locks deliberately; never remove a failing audit to force a release.

@@ -8,3 +8,4 @@ artifacts/
 *.log
 .DS_Store
 frontend/h5p-editor/dist/
+__pycache__/

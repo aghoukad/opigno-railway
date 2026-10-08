@@ -48,3 +48,10 @@ if (getenv('TRUST_REVERSE_PROXY') === '1' && !empty($_SERVER['REMOTE_ADDR'])) {
 
 // Keep credentials and environment-specific configuration out of exported config.
 $config['system.logging']['error_level'] = 'hide';
+
+// The API key stays in the process environment, never Drupal configuration.
+if ($sender = getenv('RESEND_FROM_EMAIL')) {
+  $config['system.site']['mail'] = $sender;
+  $config['mimemail.settings']['mail'] = $sender;
+  $config['mimemail.settings']['name'] = getenv('RESEND_FROM_NAME') ?: (getenv('OPIGNO_SITE_NAME') ?: 'Opigno LMS');
+}

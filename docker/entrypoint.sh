@@ -33,6 +33,13 @@ fi
 printf 'Listen %s\n' "$PORT" > /etc/apache2/ports.conf
 /usr/local/bin/opigno-apache-prepare
 
+if [[ -n "${RESEND_API_KEY:-}" || -n "${RESEND_FROM_EMAIL:-}" ]]; then
+  /usr/local/bin/opigno-resend-mail --check-config
+  echo 'Outbound email configured for Resend HTTPS.'
+else
+  echo 'Outbound email unavailable: set RESEND_API_KEY and RESEND_FROM_EMAIL in service variables.' >&2
+fi
+
 state="$(php /usr/local/share/opigno/database-state.php)"
 drush=(gosu www-data /var/www/opigno/vendor/bin/drush --root=/var/www/opigno/web --uri="$SITE_URL")
 if [[ "$state" == 'empty' ]]; then

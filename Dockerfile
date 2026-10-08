@@ -35,6 +35,8 @@ RUN COMPOSER_CACHE_DIR=/tmp/composer-cache composer install --no-dev --prefer-di
     && rm -rf /tmp/composer-cache
 
 FROM base AS runtime
+RUN apt-get update && apt-get install -y --no-install-recommends python3 \
+    && rm -rf /var/lib/apt/lists/*
 COPY --from=dependencies /var/www/opigno /var/www/opigno
 # Replace H5P's bundled editor, which is outside Composer advisory coverage.
 COPY --from=editor /build/dist/ckeditor.js /var/www/opigno/vendor/h5p/h5p-editor/ckeditor/ckeditor.js
@@ -48,7 +50,8 @@ COPY scripts/check-assets.php scripts/audit.sh /usr/local/share/opigno/
 COPY docker/entrypoint.sh /usr/local/bin/opigno-entrypoint
 COPY docker/cron.sh /usr/local/bin/opigno-cron
 COPY docker/apache-prepare.sh /usr/local/bin/opigno-apache-prepare
-RUN chmod 0755 /usr/local/bin/opigno-entrypoint /usr/local/bin/opigno-cron /usr/local/bin/opigno-apache-prepare \
+COPY docker/resend-mail.py /usr/local/bin/opigno-resend-mail
+RUN chmod 0755 /usr/local/bin/opigno-entrypoint /usr/local/bin/opigno-cron /usr/local/bin/opigno-apache-prepare /usr/local/bin/opigno-resend-mail \
     && mkdir -p web/sites/default \
     && rm -rf web/sites/default/files \
     && ln -s /data/public web/sites/default/files \

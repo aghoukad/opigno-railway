@@ -32,6 +32,7 @@ See [validation results](reports/validation.md) for exactly what was tested.
 - Startup selects Apache's prefork MPM for mod_php and validates configuration
   before touching the database, including on Railway runtimes with conflicting MPMs.
 - Railway template variable files in `railway/` and local Docker Compose configuration.
+- Resend HTTPS email transport, preserving Drupal's MIME formatting and attachments.
 
 ## Build and run locally
 
@@ -88,6 +89,8 @@ The following recipe documents the template configuration for maintainers.
    image. Paste `railway/opigno.env.example` into its Variables → Raw Editor. Make
    `OPIGNO_ADMIN_EMAIL` a value the template user supplies. The cross-service variable
    references assume the database service is named exactly `MySQL`.
+   Mark `RESEND_API_KEY`, `RESEND_FROM_EMAIL`, and `RESEND_FROM_NAME` optional;
+   leave the key and sender address blank as placeholders.
 5. Attach the Opigno volume at **`/data`**. Do not mount over `/var/www/opigno`; that
    would hide the application built into the image.
 6. Enable HTTP public networking for Opigno, targeting **8080**. Set the healthcheck
@@ -138,6 +141,45 @@ literal service ID in each [cache mount ID](https://docs.railway.com/builds/dock
 while every template deployment creates a different service ID. Composer uses a
 temporary cache that is removed in the same build layer instead.
 
+## Email with Resend
+
+PHP's `mail()` now uses the included Resend HTTPS transport instead of
+`/usr/sbin/sendmail`. This works with Opigno's existing **PHP Mail sender / Mime Mail
+formatter** configuration; no Drupal module or database migration is needed.
+[Railway restricts SMTP to Pro plans](https://docs.railway.com/networking/outbound-networking),
+so the transport uses HTTPS on port 443.
+
+The template deliberately leaves credentials and the sender address blank. In the
+Opigno service's **Variables** tab, configure these together, then deploy the change:
+
+| Variable | Value |
+| --- | --- |
+| `RESEND_API_KEY` | Your Resend API key with sending access, preferably restricted to the sending domain |
+| `RESEND_FROM_EMAIL` | A bare address on your verified domain, e.g. `notifications@yourdomain.com` |
+| `RESEND_FROM_NAME` | Sender display name; defaults to `Opigno LMS` |
+
+Enter the real key only in Railway's secret variables (or the ignored local `.env`),
+never in this repository or the shared template. Verify the sender domain in
+[Resend](https://resend.com/domains) first. The example address is a placeholder.
+Keep both the key and sender empty until ready; Opigno still starts, but outgoing
+mail fails with a clear configuration error. Supplying only one prevents startup
+so a partial configuration is detected immediately.
+
+The transport preserves plain text, HTML, Unicode subjects, Reply-To, Cc/Bcc,
+attachments and inline image content IDs. It always sends from the configured
+verified address; Resend manages the bounce/Return-Path address. Existing Drupal
+email templates and the notification queue remain in use. The API key is read only
+from the environment and is never written to Drupal configuration or transport logs.
+
+Transient API/network failures are retried up to three times with the same
+[Resend idempotency key](https://resend.com/docs/dashboard/emails/idempotency-keys).
+After that, PHP receives a failure. The transport does not add a durable queue for
+ordinary synchronous Drupal mail, and separate Drupal queue attempts are separate
+submissions. Check the Resend dashboard for acceptance, delivery and bounces, and
+verify an account notification/password-reset email to a recipient you control
+before relying on mail. Resend's sending quotas, recipient limits, attachment type
+restrictions and 40 MB email limit apply. No real delivery is tested with placeholders.
+
 ## Operations
 
 - Back up both the MySQL database and `/data` and test restoring them together.
@@ -154,8 +196,8 @@ temporary cache that is removed in the same build layer instead.
 - `CRON_INTERVAL` is in seconds; `CRON_ENABLED=0` disables the in-container scheduler.
   `DB_WAIT_TIMEOUT` defaults to 180 seconds. Run `drush cron` as `www-data` for manual
   maintenance. Railway's deployment healthcheck is not continuous monitoring.
-- Configure and test an email delivery provider in Drupal. This image does not
-  provision SMTP, an xAPI/LRS server, or live-meeting provider credentials.
+- Configure and test Resend before inviting learners. The image does not provision
+  a Resend account, an xAPI/LRS server, or live-meeting provider credentials.
 - LibreOffice, ImageMagick, and video conversion tools are not included. Add and
   validate them if you require PowerPoint/video conversion features.
 
