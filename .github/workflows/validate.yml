@@ -15,6 +15,8 @@ jobs:
       - uses: actions/checkout@v7.0.1
       - name: Build and audit locked dependencies
         run: docker build --pull --no-cache -t opigno-railway:3.2.7-patch1 .
+      - name: Verify recovery from conflicting Apache MPMs
+        run: docker run --rm --entrypoint bash -v "$PWD/tests/apache-startup.sh:/tmp/apache-startup.sh:ro" opigno-railway:3.2.7-patch1 /tmp/apache-startup.sh
       - name: Generate disposable installation credentials
         shell: bash
         run: |

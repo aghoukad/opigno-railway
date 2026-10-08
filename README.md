@@ -28,6 +28,8 @@ See [validation results](reports/validation.md) for exactly what was tested.
 - Automatic first installation with credentials supplied through environment variables.
 - A database check that refuses to reinstall into any nonempty database.
 - A readiness endpoint at `/healthz.php` and a Drupal cron loop every five minutes.
+- Startup selects Apache's prefork MPM for mod_php and validates configuration
+  before touching the database, including on Railway runtimes with conflicting MPMs.
 - Railway template variable files in `railway/` and local Docker Compose configuration.
 
 ## Build and run locally

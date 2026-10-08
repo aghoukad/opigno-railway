@@ -47,7 +47,8 @@ COPY docker/database-state.php docker/verify-install.php /usr/local/share/opigno
 COPY scripts/check-assets.php scripts/audit.sh /usr/local/share/opigno/
 COPY docker/entrypoint.sh /usr/local/bin/opigno-entrypoint
 COPY docker/cron.sh /usr/local/bin/opigno-cron
-RUN chmod 0755 /usr/local/bin/opigno-entrypoint /usr/local/bin/opigno-cron \
+COPY docker/apache-prepare.sh /usr/local/bin/opigno-apache-prepare
+RUN chmod 0755 /usr/local/bin/opigno-entrypoint /usr/local/bin/opigno-cron /usr/local/bin/opigno-apache-prepare \
     && mkdir -p web/sites/default \
     && rm -rf web/sites/default/files \
     && ln -s /data/public web/sites/default/files \
