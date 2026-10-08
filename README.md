@@ -2,209 +2,88 @@
 
 [![Deploy on Railway](https://railway.com/button.svg)](https://railway.com/deploy/Ys283P)
 
-[Source repository](https://github.com/aghoukad/opigno-railway) ·
-[Build validation](https://github.com/aghoukad/opigno-railway/actions/workflows/validate.yml)
+Deploy a custom fork of **Opigno LMS 3.2.7** with Docker. Includes Drupal 10,
+CKEditor 5, updated PDF tools, private MySQL 8.4, persistent storage, and optional
+Resend email delivery.
 
-Custom fork **3.2.7-patch1**, built from public Opigno 3.2.7. It upgrades Drupal
-to 10.6.18, Dompdf to 3.1.6, PDF.js to 6.2.108, and the Drupal and H5P editors to
-CKEditor 5. The Docker build enforces Composer and npm audits and fails if a patch
-cannot be applied. The image has passed local installation and functional smoke
-tests. GitHub Actions has also passed an AMD64 build, dependency audits, and a
-fresh installation. Railway builds directly from this repository; no container
-registry is required. The Railway template, image build, database installation,
-startup, and readiness check have also been verified. See the validation report
-for the remaining production acceptance work.
+[Build status](https://github.com/aghoukad/opigno-railway/actions/workflows/validate.yml) ·
+[Version and maintenance details](MAINTENANCE.md) ·
+[Validation results](reports/validation.md)
 
-This fork records upstream source commits, dependency locks, and integration patches.
-Read [MAINTENANCE.md](MAINTENANCE.md) for ownership,
-security scope, behavior changes, and the **December 9, 2026 Drupal 10 support deadline**.
-See [validation results](reports/validation.md) for exactly what was tested.
+## Deploy on Railway
 
-## Included
+1. Click **Deploy on Railway** above.
+2. Enter `OPIGNO_ADMIN_EMAIL` and deploy both services.
+3. Wait for the build and installation to finish; the first start takes several minutes.
+4. Open the Opigno service's public URL and go to `/user/login`.
+5. Sign in with username `admin` and the generated `OPIGNO_ADMIN_PASSWORD` from
+   **Opigno → Variables**.
 
-- PHP 8.3 and Apache, with Drupal's required PHP extensions.
-- MySQL 8.4 as a separate service.
-- A single `/data` volume containing public uploads, private files, temporary files,
-  configuration exports, and a persistent hash salt when no variable is supplied.
-- Automatic first installation with credentials supplied through environment variables.
-- A database check that refuses to reinstall into any nonempty database.
-- A readiness endpoint at `/healthz.php` and a Drupal cron loop every five minutes.
-- Startup selects Apache's prefork MPM for mod_php and validates configuration
-  before touching the database, including on Railway runtimes with conflicting MPMs.
-- Railway template variable files in `railway/` and local Docker Compose configuration.
-- Resend HTTPS email transport, preserving Drupal's MIME formatting and attachments.
+The template creates a public HTTPS URL for Opigno on port **8080** and keeps
+MySQL private. Database passwords and the Drupal hash salt are generated for each
+deployment. Uploads persist in `/data`; MySQL data persists in `/var/lib/mysql`.
 
-## Build and run locally
-
-```sh
-cp .env.example .env
-docker build --pull -t opigno-railway:3.2.7-patch1 .
-```
-
-Edit `.env`: set three different random passwords and the administrator email.
-For example, run `openssl rand -hex 32` separately for each password. Then:
-
-```sh
-docker compose up -d
-docker compose logs -f opigno
-```
-
-Open `http://localhost:8080` once installation is complete. The first installation
-can take several minutes. Username defaults to `admin`; the password comes from
-`OPIGNO_ADMIN_PASSWORD`. Changing that variable later does not reset an existing
-account. Recreated containers reuse the database and `/data` volume.
-
-## Deploy the Railway template
-
-Open [Deploy on Railway](https://railway.com/deploy/Ys283P), supply
-`OPIGNO_ADMIN_EMAIL`, and deploy both services. The template provisions MySQL 8.4
-with `/var/lib/mysql` storage and Opigno with `/data` storage. Database passwords,
-the initial administrator password, and the Drupal hash salt are generated for
-each deployment. Opigno receives a public HTTPS domain routed to container port
-8080; MySQL stays on Railway's private network. This template setting applies to
-new deployments. Earlier deployments need their own Opigno public domain targeting
-port 8080.
-
-Wait for the image build and initial installation to finish. Sign in at
-`/user/login` using `admin` and the generated `OPIGNO_ADMIN_PASSWORD` from the
-Opigno service's Variables tab. Changing that variable later does not reset the
-existing administrator password. Configure email delivery, backups, and a custom
-domain as appropriate before inviting users.
-
-The template is shareable by URL and is not listed in the Railway marketplace.
-
-## Recreate or customize the Railway template
-
-The following recipe documents the template configuration for maintainers.
-
-1. Push this project to a GitHub repository that Railway can access. Alternatively,
-   publish a tested `linux/amd64` image to your container registry and use that image
-   as the Opigno service source. Never publish `.env`.
-2. In [Railway's template editor](https://railway.com/workspace/templates), choose
-   **New Template** and add a Docker image service named **MySQL**, using `mysql:8.4`.
-3. Paste `railway/mysql.env.example` into that service's Variables → Raw Editor.
-   Attach a volume at `/var/lib/mysql`. Keep MySQL private. Its default packet size
-   is sufficient for the documented Opigno minimum; use at least 64 MB if overriding it.
-4. Add a service named **Opigno**, sourced from your GitHub repository or published
-   image. Paste `railway/opigno.env.example` into its Variables → Raw Editor. Make
-   `OPIGNO_ADMIN_EMAIL` a value the template user supplies. The cross-service variable
-   references assume the database service is named exactly `MySQL`.
-   Mark `RESEND_API_KEY`, `RESEND_FROM_EMAIL`, and `RESEND_FROM_NAME` optional;
-   leave the key and sender address blank as placeholders.
-5. Attach the Opigno volume at **`/data`**. Do not mount over `/var/www/opigno`; that
-   would hide the application built into the image.
-6. Enable HTTP public networking for Opigno, targeting **8080**. Set the healthcheck
-   path to **`/healthz.php`** and the timeout to **900 seconds**. Leave the start and
-   pre-deploy commands empty; the image handles startup after the volume is mounted.
-   Use one replica and keep service sleeping disabled so cron continues to run.
-7. Create the template, deploy it into a test project, and check installation,
-   sign-in, uploads, private download permissions, course delivery, certificates,
-   and persistence across a redeploy. Only then share or publish the template.
-
-`${{secret(...)}}` expressions belong in the **template editor**. For a manually
-created live project, set actual randomly generated secrets instead. The supplied
-MySQL variable names are for the raw `mysql:8.4` service described here. If you use
-Railway's existing MySQL template instead, map its exported `MYSQLHOST`, `MYSQLPORT`,
-`MYSQLDATABASE`, `MYSQLUSER`, and `MYSQLPASSWORD` variables to Opigno.
-
-The service automatically uses `RAILWAY_PUBLIC_DOMAIN` for its site URL and trusted
-host. For a custom domain, set `SITE_URL=https://learning.example.com`. Additional
-allowed hostnames go in `DRUPAL_TRUSTED_HOSTS`, comma-separated without schemes.
-`TRUST_REVERSE_PROXY=1` is for Railway's edge proxy; it trusts forwarded protocol and
-port from the immediate peer. Leave it unset for direct local HTTP access.
-
-If you add a public domain after a service has already started, redeploy the
-service so its container receives the updated Railway domain variable. If Drupal
-shows **"The provided host name is not valid for this server"**, set `SITE_URL`
-to the exact public URL (for example, `https://your-service.up.railway.app`) and
-apply the variable change/redeploy. The URL's hostname is automatically added to
-Drupal's allowed hosts. Keep additional aliases in `DRUPAL_TRUSTED_HOSTS`;
-do not disable host validation or allow every hostname.
-
-Railway's current documentation says new services cannot adopt the deprecated
-[`railway.json`/`railway.toml` format](https://docs.railway.com/config-as-code). This repository uses the template editor. For infrastructure as code, Railway
-now provides `.railway/railway.ts`; that is a separate CLI-managed workflow.
-
-For a registry image, build the Railway architecture explicitly (the local smoke
-image was tested on ARM64):
-
-```sh
-docker buildx build --platform linux/amd64 --pull \
-  --tag ghcr.io/YOUR_ORG/opigno-railway:3.2.7-patch1 --push .
-```
-
-Replace `YOUR_ORG` and authenticate to your registry first. Choose either the GitHub
-source build or the published image in Railway; both use this Dockerfile.
-
-The Dockerfile intentionally avoids BuildKit cache mounts. Railway requires a
-literal service ID in each [cache mount ID](https://docs.railway.com/builds/dockerfiles#cache-mounts),
-while every template deployment creates a different service ID. Composer uses a
-temporary cache that is removed in the same build layer instead.
+Administrator variables apply only to the first installation. Changing them later
+does not reset an existing account.
 
 ## Email with Resend
 
-PHP's `mail()` now uses the included Resend HTTPS transport instead of
-`/usr/sbin/sendmail`. This works with Opigno's existing **PHP Mail sender / Mime Mail
-formatter** configuration; no Drupal module or database migration is needed.
-[Railway restricts SMTP to Pro plans](https://docs.railway.com/networking/outbound-networking),
-so the transport uses HTTPS on port 443.
-
-The template deliberately leaves credentials and the sender address blank. In the
-Opigno service's **Variables** tab, configure these together, then deploy the change:
+Verify your sending domain in [Resend](https://resend.com/domains), then set these
+in **Opigno → Variables** and deploy the changes:
 
 | Variable | Value |
 | --- | --- |
-| `RESEND_API_KEY` | Your Resend API key with sending access, preferably restricted to the sending domain |
-| `RESEND_FROM_EMAIL` | A bare address on your verified domain, e.g. `notifications@yourdomain.com` |
-| `RESEND_FROM_NAME` | Sender display name; defaults to `Opigno LMS` |
+| `RESEND_API_KEY` | Your Resend sending API key |
+| `RESEND_FROM_EMAIL` | Address on your verified domain, such as `notifications@yourdomain.com` |
+| `RESEND_FROM_NAME` | Optional sender name; defaults to `Opigno LMS` |
 
-Enter the real key only in Railway's secret variables (or the ignored local `.env`),
-never in this repository or the shared template. Verify the sender domain in
-[Resend](https://resend.com/domains) first. The example address is a placeholder.
-Keep both the key and sender empty until ready; Opigno still starts, but outgoing
-mail fails with a clear configuration error. Supplying only one prevents startup
-so a partial configuration is detected immediately.
+The key and sender are blank placeholders. Leave **both** blank to run without
+email, or configure **both** to enable it. Setting only one prevents startup.
+Keep the real key in Railway variables or your local `.env`, never in Git.
 
-The transport preserves plain text, HTML, Unicode subjects, Reply-To, Cc/Bcc,
-attachments and inline image content IDs. It always sends from the configured
-verified address; Resend manages the bounce/Return-Path address. Existing Drupal
-email templates and the notification queue remain in use. The API key is read only
-from the environment and is never written to Drupal configuration or transport logs.
+Email uses Resend's HTTPS API and supports HTML and attachments. Test delivery to
+an address you control before enabling account notifications or password resets.
 
-Transient API/network failures are retried up to three times with the same
-[Resend idempotency key](https://resend.com/docs/dashboard/emails/idempotency-keys).
-After that, PHP receives a failure. The transport does not add a durable queue for
-ordinary synchronous Drupal mail, and separate Drupal queue attempts are separate
-submissions. Check the Resend dashboard for acceptance, delivery and bounces, and
-verify an account notification/password-reset email to a recipient you control
-before relying on mail. Resend's sending quotas, recipient limits, attachment type
-restrictions and 40 MB email limit apply. No real delivery is tested with placeholders.
+## Run locally
 
-## Operations
+```sh
+cp .env.example .env
+```
 
-- Back up both the MySQL database and `/data` and test restoring them together.
-- Keep the hash salt stable across deploys. Do not regenerate template secrets in an
-  existing installation. Preserve the application volume during rebuilds.
-- A partial installation causes startup to fail. Restore a known-good backup or
-  investigate the database; the entrypoint never automatically wipes or repairs it.
-- Run reviewed database updates explicitly after taking a backup. For example,
-  `docker compose exec --user www-data opigno drush updatedb -y`, then
-  `docker compose exec --user www-data opigno drush cache:rebuild`.
-- Test a fresh installation and an upgrade against a copy of production before
-  changing the image. Code deployment rebuilds caches and refreshes generated
-  H5P assets; it does not automatically run database updates.
-- `CRON_INTERVAL` is in seconds; `CRON_ENABLED=0` disables the in-container scheduler.
-  `DB_WAIT_TIMEOUT` defaults to 180 seconds. Run `drush cron` as `www-data` for manual
-  maintenance. Railway's deployment healthcheck is not continuous monitoring.
-- Configure and test Resend before inviting learners. The image does not provision
-  a Resend account, an xAPI/LRS server, or live-meeting provider credentials.
-- LibreOffice, ImageMagick, and video conversion tools are not included. Add and
-  validate them if you require PowerPoint/video conversion features.
+Edit `.env`: set `MYSQL_PASSWORD`, `MYSQL_ROOT_PASSWORD`,
+`OPIGNO_ADMIN_PASSWORD`, and `OPIGNO_ADMIN_EMAIL`. Use a different random password
+for each account; `openssl rand -hex 32` can generate one.
 
-## Sources
+```sh
+docker compose up -d --build
+docker compose logs -f opigno
+```
 
-- [Opigno release](https://www.drupal.org/project/opigno_lms/releases/3.2.7)
-- [Opigno installation prerequisites](https://opigno.atlassian.net/wiki/spaces/OUM3/pages/2802942319/Prerequisites)
-- [Railway template creation](https://docs.railway.com/templates/create)
-- [Railway healthchecks](https://docs.railway.com/deployments/healthchecks)
-- [Railway configuration migration](https://docs.railway.com/infrastructure-as-code)
+Once installation finishes, open **http://localhost:8080** and sign in with
+`admin` and your `OPIGNO_ADMIN_PASSWORD`. Set `LOCAL_PORT` in `.env` if port 8080
+is already in use. Resend variables are optional locally too.
+
+## Domains and troubleshooting
+
+For a custom domain, set `SITE_URL=https://learning.example.com` and redeploy.
+If Drupal reports **"The provided host name is not valid for this server"**, set
+`SITE_URL` to your exact public HTTPS URL and redeploy. The hostname is then
+allowed automatically. Additional aliases go in `DRUPAL_TRUSTED_HOSTS`, separated
+by commas without `https://`.
+
+If email is unavailable, check that both Resend variables are set and the sending
+domain is verified. The readiness endpoint is `/healthz.php`.
+
+## Maintenance
+
+- Back up MySQL and `/data` together, and test restoring them. Keep volumes and
+  generated secrets across redeployments.
+- Test upgrades on a copy of your data. Startup preserves an installed database;
+  it does not automatically run database migrations.
+- **Drupal 10 support ends December 9, 2026.** Plan the Drupal 11 migration using
+  the [maintenance guide](MAINTENANCE.md).
+
+See the [Railway reference](railway/README.md) for template customization, service
+icons, email transport details, and operational settings. Review the
+[validation results](reports/validation.md) for tested features and remaining
+production checks.
