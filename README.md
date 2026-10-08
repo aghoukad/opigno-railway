@@ -110,6 +110,14 @@ allowed hostnames go in `DRUPAL_TRUSTED_HOSTS`, comma-separated without schemes.
 `TRUST_REVERSE_PROXY=1` is for Railway's edge proxy; it trusts forwarded protocol and
 port from the immediate peer. Leave it unset for direct local HTTP access.
 
+If you add a public domain after a service has already started, redeploy the
+service so its container receives the updated Railway domain variable. If Drupal
+shows **"The provided host name is not valid for this server"**, set `SITE_URL`
+to the exact public URL (for example, `https://your-service.up.railway.app`) and
+apply the variable change/redeploy. The URL's hostname is automatically added to
+Drupal's allowed hosts. Keep additional aliases in `DRUPAL_TRUSTED_HOSTS`;
+do not disable host validation or allow every hostname.
+
 Railway's current documentation says new services cannot adopt the deprecated
 [`railway.json`/`railway.toml` format](https://docs.railway.com/config-as-code). This repository uses the template editor. For infrastructure as code, Railway
 now provides `.railway/railway.ts`; that is a separate CLI-managed workflow.

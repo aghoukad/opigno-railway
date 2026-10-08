@@ -117,14 +117,17 @@ The [hosted validation run for `dc685d7`](https://github.com/aghoukad/opigno-rai
 also passed: fresh AMD64 image build, dependency audits, Apache MPM regression,
 fresh database installation, installation and asset checks, and HTTP checks.
 
-The existing project was created before the template's public-domain change and
-was still private during this check. Public HTTPS browsing and production login
-were not tested. The first installation also logged that sendmail was unavailable;
-an email provider must be configured separately.
+The existing project was created before the template's public-domain change. When
+a public domain was added afterward, the original running container rejected that
+host with HTTP 400. Setting `SITE_URL` to the exact public HTTPS URL and redeploying
+resolved it. `/healthz.php` and `/user/login` returned **HTTP 200** over HTTPS,
+and Chrome displayed the public sign-in screen. Authentication with a production
+account was not tested in this check. The first installation also logged that
+sendmail was unavailable; an email provider must be configured separately.
 
 ## Remaining deployment acceptance work
 
-Test public HTTPS and sign-in on Railway with its real domain and proxy. Validate the course
+Test authenticated sign-in and sessions on Railway with its real domain and proxy. Validate the course
 features and H5P types you use, course enrollment/access permissions, outbound mail, backup/restore,
 load, an OS/container vulnerability scan, and an existing database migration if
 applicable. The local functional tests and dependency audits do not cover these.
