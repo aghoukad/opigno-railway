@@ -96,8 +96,11 @@ core constraint and assume compatibility.
 for their respective locked dependency graphs on the recorded date. The browser asset
 check covers known PDF.js vulnerabilities and the removed Drupal CKEditor 4 module.
 These results do not mean the full legacy application, OS image, or every downloaded
-H5P library has been independently security-audited. No Railway deployment, AMD64
-runtime test, load test, or existing-site data migration was performed locally.
+H5P library has been independently security-audited. GitHub Actions verifies an
+AMD64 build and fresh installation; Railway image build, startup, and readiness
+were verified on 2026-10-08. Full functional browser checks were local. Load tests,
+backup/restore, and existing-site data migrations remain unverified; see
+[validation results](reports/validation.md).
 
 ## Primary references
 

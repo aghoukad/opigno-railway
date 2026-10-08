@@ -11,8 +11,9 @@ CKEditor 5. The Docker build enforces Composer and npm audits and fails if a pat
 cannot be applied. The image has passed local installation and functional smoke
 tests. GitHub Actions has also passed an AMD64 build, dependency audits, and a
 fresh installation. Railway builds directly from this repository; no container
-registry is required. The template has been created, but a live Railway deployment
-has not yet been tested.
+registry is required. The Railway template, image build, database installation,
+startup, and readiness check have also been verified. See the validation report
+for the remaining production acceptance work.
 
 This fork records upstream source commits, dependency locks, and integration patches.
 Read [MAINTENANCE.md](MAINTENANCE.md) for ownership,

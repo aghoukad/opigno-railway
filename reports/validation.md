@@ -90,12 +90,41 @@ responses for `/healthz.php` and `/user/login`.
 
 The [Railway template](https://railway.com/deploy/Ys283P) was created and its
 deployment page was checked in Chrome. Both services, their persistent volume
-paths, and the required administrator email input were verified. No live Railway
-project was deployed during template creation.
+paths, and the required administrator email input were verified. Its saved
+configuration provides a public service domain targeting Opigno port 8080, with
+no public domain or TCP proxy for MySQL.
+
+## Railway deployment verification — 2026-10-08
+
+After a user-created project exposed platform-specific failures, two fixes were
+applied and the existing Opigno service was rebuilt with authorization:
+
+- Removed the Composer BuildKit cache mount, which Railway rejected because it
+  requires a literal per-service cache ID. Template deployments have different IDs.
+- Normalize Apache to the prefork MPM at startup, before database initialization.
+  Railway's runtime loaded a conflicting MPM even though local and GitHub builds
+  started correctly. A disposable-container regression check reproduces the error,
+  verifies recovery, checks that PHP stays loaded, and confirms repeated startup
+  preparation is safe. This check also runs in GitHub Actions.
+
+Railway successfully built commit `dc685d7`, reused the installed Opigno database
+and persistent volume, reported `Syntax OK` and `Opigno installation verified`,
+started Apache, and received **HTTP 200** from `/healthz.php`. Deployment status
+became **SUCCESS**. The resulting AMD64 image digest was
+`sha256:0dcee7f03e97de4f166a4b15274e503a2ebc62884fbfe21e828cd65f60794c49`.
+
+The [hosted validation run for `dc685d7`](https://github.com/aghoukad/opigno-railway/actions/runs/37705530389)
+also passed: fresh AMD64 image build, dependency audits, Apache MPM regression,
+fresh database installation, installation and asset checks, and HTTP checks.
+
+The existing project was created before the template's public-domain change and
+was still private during this check. Public HTTPS browsing and production login
+were not tested. The first installation also logged that sendmail was unavailable;
+an email provider must be configured separately.
 
 ## Remaining deployment acceptance work
 
-Test on Railway with its real domain, proxy, volume and secrets. Validate the course
+Test public HTTPS and sign-in on Railway with its real domain and proxy. Validate the course
 features and H5P types you use, course enrollment/access permissions, outbound mail, backup/restore,
 load, an OS/container vulnerability scan, and an existing database migration if
 applicable. The local functional tests and dependency audits do not cover these.
